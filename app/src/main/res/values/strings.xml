@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">cs160_prog3</string>
+    <string name="title_activity_comment_feed">Comment Feed</string>
+</resources>
