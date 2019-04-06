@@ -1,0 +1,32 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:theme="@style/actionMenu">
+
+    <item
+        android:id="@+id/currUser"
+        android:title="currUser"
+        app:showAsAction="always"
+        />
+
+
+    <item
+        android:id="@+id/refresh"
+        android:title="REFRESH LOCATION"
+        android:icon="@drawable/baseline_refresh_white_24dp"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/settings"
+        android:icon="@drawable/baseline_settings_white_24dp"
+        android:title="action_notification"
+        app:showAsAction="always">
+        <menu>
+        <item
+            android:id="@+id/logout"
+            android:title="SIGN OUT"
+            app:showAsAction="always" />
+        </menu>
+    </item>
+
+
+</menu>

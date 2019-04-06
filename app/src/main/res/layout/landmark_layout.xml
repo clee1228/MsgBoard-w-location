@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- layout file for a single cell in the comment recycler view -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/landmark_layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?android:attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/row_padding_vertical"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/row_padding_vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:outlineProvider="bounds"
+        android:padding="16dp">
+
+        <ImageView
+            android:id="@+id/photo"
+            android:layout_width="324dp"
+            android:layout_height="200dp"
+            android:src="@mipmap/ic_launcher" />
+
+        <TextView
+            android:id="@+id/locationText"
+            android:layout_width="325dp"
+            android:layout_height="wrap_content"
+            android:text="username"
+            android:textAlignment="center"
+            android:textColor="@android:color/black"
+            android:textSize="16dp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/distance"
+            android:layout_width="323dp"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:textAlignment="center" />
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/ll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:orientation="vertical">
+
+        <!-- username text view -->
+
+
+        <!-- time elapsed text view -->
+    </LinearLayout>
+
+    <!-- comment body text -->
+
+
+</RelativeLayout>

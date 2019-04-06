@@ -7,11 +7,15 @@ public class Comment {
 
     public String text;
     public String username;
+    public String landmarkName;
     public Date date;
 
-    Comment(String text, String username, Date date) {
+
+
+    Comment(String text, String username, String landmarkName, Date date) {
         this.text = text;
         this.username = username;
+        this.landmarkName = landmarkName;
         this.date = date;
     }
 
@@ -37,5 +41,17 @@ public class Comment {
             return "less than an hour";
         }
     }
+
+    public String getPostid(){
+        String id = date.toString();
+        return id;
+    }
+
+    public String getLandmark(){
+        return landmarkName;
+    }
+
+
+
 }
 

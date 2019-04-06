@@ -1,44 +1,66 @@
 package com.example.cs160_sp18.prog3;
 
+import android.content.Intent;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 
-// Displays a list of comments for a particular landmark.
-public class CommentFeedActivity extends AppCompatActivity {
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
-    private static final String TAG = CommentFeedActivity.class.getSimpleName();
+import com.google.firebase.database.MutableData;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.Transaction;
+import com.google.firebase.database.ValueEventListener;
 
+public class CommentFeedActivity extends AppCompatActivity{
+
+    private String username;
+    private String landmarkName;
     private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
     private ArrayList<Comment> mComments = new ArrayList<Comment>();
+    public HashMap<String, String> comments;
+    public FirebaseDatabase database = FirebaseDatabase.getInstance();
+    public DatabaseReference databaseLike;
+    CommentAdapter.onBtnClickListener listener;
+    public Integer likeCount;
+    boolean processLike = false;
+
 
     // UI elements
     EditText commentInputBox;
     RelativeLayout layout;
     Button sendButton;
-    Toolbar mToolbar;
 
-    /* TODO: right now mRecyclerView is using hard coded comments.
-     * You'll need to add functionality for pulling and posting comments from Firebase
-     */
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_comment_feed);
 
-        // TODO: replace this with the name of the landmark the user chose
-        String landmarkName = "test landmark";
+        Intent intent = getIntent();
+        username = intent.getStringExtra("username");
+        landmarkName = intent.getStringExtra("locationName");
 
         // sets the app bar's title
         setTitle(landmarkName + ": Posts");
@@ -47,47 +69,62 @@ public class CommentFeedActivity extends AppCompatActivity {
         layout = (RelativeLayout) findViewById(R.id.comment_layout);
         commentInputBox = (EditText) layout.findViewById(R.id.comment_input_edit_text);
         sendButton = (Button) layout.findViewById(R.id.send_button);
-
-        mToolbar = (Toolbar) findViewById(R.id.my_toolbar);
-        setSupportActionBar(mToolbar);
-
         mRecyclerView = (RecyclerView) findViewById(R.id.comment_recycler);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+
         // create an onclick for the send button
         setOnClickForSendButton();
 
-        // make some test comment objects that we add to the recycler view
-        makeTestComments();
+        mComments = new ArrayList<Comment>();
 
-        // use the comments in mComments to create an adapter. This will populate mRecyclerView
-        // with a custom cell (with comment_cell_layout) for each comment in mComments
+        final DatabaseReference bearLandmark = database.getReference(landmarkName);
+        ValueEventListener listener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                mComments = new ArrayList<Comment>();
+                comments = (HashMap<String, String>) dataSnapshot.getValue();
+                for(DataSnapshot ds : dataSnapshot.getChildren()){
+                    String s = ds.getKey();
+                    Date date = getDate(s);
+                    String comment = ds.child("comment").getValue(String.class);
+                    String user = ds.child("user").getValue(String.class);
+                    String landmark = ds.child("landmark").getValue(String.class);
+                    Comment c = new Comment(comment, user, landmark, date);
+                    mComments.add(c);
+                }
+
+                setAdapterAndUpdateData();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        };
+
+        bearLandmark.addValueEventListener(listener);
         setAdapterAndUpdateData();
     }
 
-    // TODO: delete me
-    private void makeTestComments() {
-        String randomString = "hello world hello world ";
-        Comment newComment = new Comment(randomString, "test_user1", new Date());
-        Comment hourAgoComment = new Comment(randomString + randomString, "test_user2", new Date(System.currentTimeMillis() - (60 * 60 * 1000)));
-        Comment overHourComment = new Comment(randomString, "test_user3", new Date(System.currentTimeMillis() - (2 * 60 * 60 * 1000)));
-        Comment dayAgoComment = new Comment(randomString, "test_user4", new Date(System.currentTimeMillis() - (25 * 60 * 60 * 1000)));
-        Comment daysAgoComment = new Comment(randomString + randomString + randomString, "test_user5", new Date(System.currentTimeMillis() - (48 * 60 * 60 * 1000)));
-        mComments.add(newComment);mComments.add(hourAgoComment); mComments.add(overHourComment);mComments.add(dayAgoComment); mComments.add(daysAgoComment);
+    public Date getDate(String s){
+        Date date = null;
+        try {
+            date = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").parse(s);
+        } catch (java.text.ParseException e) {
+            e.printStackTrace();
+        }
+        return date;
 
     }
 
     private void setOnClickForSendButton() {
         sendButton.setOnClickListener(new View.OnClickListener() {
-            @Override
             public void onClick(View v) {
                 String comment = commentInputBox.getText().toString();
                 if (TextUtils.isEmpty(comment)) {
-                    // don't do anything if nothing was added
                     commentInputBox.requestFocus();
                 } else {
-                    // clear edit text, post comment
                     commentInputBox.setText("");
                     postNewComment(comment);
                 }
@@ -95,19 +132,51 @@ public class CommentFeedActivity extends AppCompatActivity {
         });
     }
 
-    private void setAdapterAndUpdateData() {
-        // create a new adapter with the updated mComments array
-        // this will "refresh" our recycler view
-        mAdapter = new CommentAdapter(this, mComments);
-        mRecyclerView.setAdapter(mAdapter);
 
-        // scroll to the last comment
-        mRecyclerView.smoothScrollToPosition(mComments.size() - 1);
+    private void setAdapterAndUpdateData() {
+            CommentAdapter.onBtnClickListener listener = new CommentAdapter.onBtnClickListener() {
+            @Override
+            public void onBtnClick(CommentAdapter.CommentViewHolder mHolder, Comment comment) {
+
+                String tag = mHolder.likeButton.getTag().toString();
+                if (tag == "liked") {
+                    mHolder.likeButton.setImageResource(R.drawable.unlike);
+                    mHolder.likeButton.setTag("unlike");
+
+                } else {
+                    mHolder.likeButton.setImageResource(R.drawable.liked);
+                    mHolder.likeButton.setTag("liked");
+                }
+            }
+
+            };
+
+
+            mAdapter = new CommentAdapter(this, mComments, listener);
+            mRecyclerView.setAdapter(mAdapter);
+            if (mComments.size() == 0) {
+                mRecyclerView.smoothScrollToPosition(0);
+            } else {
+                mRecyclerView.smoothScrollToPosition(mComments.size() - 1);
+            }
     }
 
+
+
+
+
     private void postNewComment(String commentText) {
-        Comment newComment = new Comment(commentText, "one-sixty student", new Date());
+        Comment newComment = new Comment(commentText, username, landmarkName, new Date());
         mComments.add(newComment);
+
+        DatabaseReference landmark  = database.getReference(landmarkName);
+        String time = String.valueOf(new Date());
+        DatabaseReference entry = landmark.child(time);
+        entry.child("user").setValue(username);
+        entry.child("comment").setValue(commentText);
+        entry.child("landmark").setValue(landmarkName);
+
+
         setAdapterAndUpdateData();
     }
 
@@ -116,4 +185,8 @@ public class CommentFeedActivity extends AppCompatActivity {
         finish();
         return true;
     }
+
 }
+
+
+

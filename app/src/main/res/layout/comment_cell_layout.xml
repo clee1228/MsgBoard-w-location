@@ -2,6 +2,7 @@
 
 <!-- layout file for a single cell in the comment recycler view -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/comment_cell_layout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -19,6 +20,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
+        android:dividerPadding="@dimen/activity_horizontal_margin"
         android:orientation="horizontal">
 
         <!-- username text view -->
@@ -32,6 +34,7 @@
             android:textStyle="bold" />
 
         <!-- time elapsed text view -->
+
         <TextView
             android:id="@+id/date_text_view"
             android:layout_width="match_parent"
@@ -39,6 +42,7 @@
             android:gravity="right"
             android:text="4 hours ago" />
     </LinearLayout>
+
 
     <!-- comment body text -->
     <TextView
@@ -50,4 +54,40 @@
         android:paddingTop="8dp"
         android:text="this is some text that previews what a comments text would look like"
         android:textSize="16sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/comment_text_view"
+        android:layout_marginTop="1dp"
+        android:gravity="right"
+        android:orientation="horizontal"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
+
+        <TextView
+            android:id="@+id/numLikes"
+            android:layout_width="310dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:layout_weight="1"
+            android:gravity="right"
+            android:text="10 likes" />
+
+        <ImageButton
+            android:id="@+id/like"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:layout_weight="1"
+            android:background="#FFFFFF"
+            android:gravity="right"
+            app:srcCompat="@drawable/unlike" />
+
+
+
+
+    </LinearLayout>
+
+
 </RelativeLayout>
